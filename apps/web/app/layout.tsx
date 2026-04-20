@@ -3,7 +3,9 @@ import { Inter } from 'next/font/google';
 import { Providers } from '../components/providers';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const geist = Inter({ subsets: ['latin'], variable: '--font-geist' });
+// Geist Mono not available in this Next.js version — using monospace system font via CSS
+const geistMono = Inter({ subsets: ['latin'], variable: '--font-geist-mono', display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'ISO 16363 Compliance Platform',
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${geist.variable} ${geistMono.variable} font-sans`}>
         <Providers>{children}</Providers>
       </body>
     </html>

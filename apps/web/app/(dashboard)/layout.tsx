@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '../../lib/auth';
+import { AppNav } from '../../components/nav/app-nav';
 import { NotificationBell } from '../../components/notifications/notification-bell';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -11,43 +11,31 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session.user.orgId) redirect('/create-org');
 
   const role = session.user.role ?? '';
-  const showGapAnalysis = ['internal_auditor', 'org_manager'].includes(role);
-  const showAuditView = ['external_auditor', 'internal_auditor', 'org_manager'].includes(role);
+  const email = session.user.email ?? '';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="text-sm font-semibold text-gray-900 hover:text-blue-600">
-            ISO 16363 Platform
-          </Link>
-          <nav className="flex items-center gap-4 text-sm text-gray-500">
-            <Link href="/dashboard" className="hover:text-gray-900 transition-colors">Dashboard</Link>
-            <Link href="/standard" className="hover:text-gray-900 transition-colors">Standard</Link>
-            {showGapAnalysis && (
-              <Link href="/gap-analysis" className="hover:text-gray-900 transition-colors">Gap Analysis</Link>
-            )}
-          </nav>
-        </div>
-        <div className="flex items-center gap-3">
-          {showAuditView && (
-            <Link
-              href={`/audit/${session.user.orgId}`}
-              className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors font-medium"
-            >
-              Auditor View
-            </Link>
-          )}
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <AppNav role={role} email={email} orgId={session.user.orgId} />
+      <main style={{ marginLeft: 200, flex: 1, background: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {/* Slim top bar for notifications */}
+        <div
+          style={{
+            height: 44,
+            borderBottom: '0.5px solid rgba(0,0,0,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            padding: '0 16px',
+            gap: 10,
+            flexShrink: 0,
+          }}
+        >
           <NotificationBell token={session.accessToken ?? ''} />
-          <div className="flex items-center gap-2 text-sm text-gray-500 pl-2 border-l border-gray-200">
-            <span className="max-w-[140px] truncate">{session.user.email}</span>
-            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium whitespace-nowrap">
-              {role}
-            </span>
-          </div>
         </div>
-      </header>
-      <main className="p-6">{children}</main>
+        <div style={{ flex: 1 }}>
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

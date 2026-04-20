@@ -2,27 +2,83 @@ import Link from 'next/link';
 
 export default function StandardPage() {
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-2">ISO 16363 Standard</h1>
-      <p className="text-gray-500 text-sm mb-6">
-        CCSDS 652.0-M-2 — Trustworthy Digital Repositories. Select a metric in the sidebar to
-        track readiness and attach evidence.
-      </p>
+    <div style={{ padding: '20px 24px', maxWidth: 640 }}>
+      <div style={{ marginBottom: 20 }}>
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: '#9a9a9a',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            margin: '0 0 4px',
+          }}
+        >
+          Padrão
+        </p>
+        <h1 style={{ fontSize: 15, fontWeight: 500, color: '#1a1a1a', margin: 0 }}>
+          ISO 16363 — CCSDS 652.0-M-2
+        </h1>
+        <p style={{ fontSize: 13, color: '#5a5a5a', marginTop: 4 }}>
+          Selecione uma métrica na barra lateral para rastrear prontidão e anexar evidências.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {[
-          { id: '3', label: 'Section 3', title: 'Organizational Infrastructure', metrics: 28 },
-          { id: '4', label: 'Section 4', title: 'Digital Object Management', metrics: 50 },
-          { id: '5', label: 'Section 5', title: 'Infrastructure & Security', metrics: 23 },
+          { id: '3', code: '3', title: 'Infraestrutura organizacional', metrics: 28 },
+          { id: '4', code: '4', title: 'Gestão de objetos digitais', metrics: 50 },
+          { id: '5', code: '5', title: 'Gestão de infraestrutura e riscos', metrics: 23 },
         ].map((s) => (
           <Link
             key={s.id}
             href={`/standard/${s.id}`}
-            className="block p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
+            style={{ textDecoration: 'none' }}
           >
-            <p className="text-xs font-mono text-gray-400 mb-1">{s.label}</p>
-            <p className="text-sm font-semibold text-gray-900 mb-2">{s.title}</p>
-            <p className="text-xs text-gray-500">{s.metrics} metrics</p>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                border: '0.5px solid var(--color-border-tertiary)',
+                borderRadius: 6,
+                padding: '8px 12px',
+                background: 'white',
+                cursor: 'pointer',
+              }}
+              className="hover:bg-[#f5f6f8]"
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 11,
+                  color: '#9a9a9a',
+                  minWidth: 36,
+                  flexShrink: 0,
+                }}
+              >
+                {s.code}
+              </span>
+              <span style={{ fontSize: 13, color: '#1a1a1a', flex: 1 }}>
+                {s.title}
+              </span>
+              <span style={{ fontSize: 11, color: '#9a9a9a', flexShrink: 0 }}>
+                {s.metrics} métricas
+              </span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#9a9a9a"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
           </Link>
         ))}
       </div>

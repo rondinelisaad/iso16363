@@ -4,21 +4,53 @@ import { ReadinessStatus } from '@iso16363/shared-types';
 
 const LABELS: Record<ReadinessStatus, string> = {
   [ReadinessStatus.PENDING]: 'Pending',
-  [ReadinessStatus.IN_PROGRESS]: 'In Progress',
+  [ReadinessStatus.IN_PROGRESS]: 'In progress',
   [ReadinessStatus.READY]: 'Ready',
 };
 
-const STYLES: Record<ReadinessStatus, string> = {
-  [ReadinessStatus.PENDING]: 'border-gray-300 text-gray-600 bg-white hover:bg-gray-50',
-  [ReadinessStatus.IN_PROGRESS]:
-    'border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100',
-  [ReadinessStatus.READY]: 'border-green-500 text-green-700 bg-green-50 hover:bg-green-100',
+const INACTIVE: Record<ReadinessStatus, React.CSSProperties> = {
+  [ReadinessStatus.PENDING]: {
+    background: 'var(--color-background-primary)',
+    color: 'var(--color-text-secondary)',
+    borderColor: 'var(--color-border-secondary)',
+  },
+  [ReadinessStatus.IN_PROGRESS]: {
+    background: 'var(--color-background-primary)',
+    color: 'var(--color-text-secondary)',
+    borderColor: 'var(--color-border-secondary)',
+  },
+  [ReadinessStatus.READY]: {
+    background: 'var(--color-background-primary)',
+    color: 'var(--color-text-secondary)',
+    borderColor: 'var(--color-border-secondary)',
+  },
 };
 
-const ACTIVE: Record<ReadinessStatus, string> = {
-  [ReadinessStatus.PENDING]: 'border-gray-500 bg-gray-100 text-gray-800 font-semibold',
-  [ReadinessStatus.IN_PROGRESS]: 'border-yellow-500 bg-yellow-100 text-yellow-800 font-semibold',
-  [ReadinessStatus.READY]: 'border-green-600 bg-green-100 text-green-800 font-semibold',
+const ACTIVE: Record<ReadinessStatus, React.CSSProperties> = {
+  [ReadinessStatus.PENDING]: {
+    background: '#FAEEDA',
+    color: '#854F0B',
+    borderColor: '#FAC775',
+    fontWeight: 500,
+  },
+  [ReadinessStatus.IN_PROGRESS]: {
+    background: '#E6F1FB',
+    color: '#0C447C',
+    borderColor: '#B5D4F4',
+    fontWeight: 500,
+  },
+  [ReadinessStatus.READY]: {
+    background: '#EAF3DE',
+    color: '#27500A',
+    borderColor: '#C0DD97',
+    fontWeight: 500,
+  },
+};
+
+const DOT_COLOR: Record<ReadinessStatus, string> = {
+  [ReadinessStatus.PENDING]: '#EF9F27',
+  [ReadinessStatus.IN_PROGRESS]: '#378ADD',
+  [ReadinessStatus.READY]: '#1D9E75',
 };
 
 interface Props {
@@ -30,19 +62,41 @@ interface Props {
 export function ReadinessToggle({ value, onChange, disabled }: Props) {
   return (
     <div className="flex gap-2">
-      {Object.values(ReadinessStatus).map((s) => (
-        <button
-          key={s}
-          disabled={disabled}
-          onClick={() => onChange(s)}
-          className={[
-            'px-3 py-1.5 text-xs rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-            value === s ? ACTIVE[s] : STYLES[s],
-          ].join(' ')}
-        >
-          {LABELS[s]}
-        </button>
-      ))}
+      {Object.values(ReadinessStatus).map((s) => {
+        const isActive = value === s;
+        return (
+          <button
+            key={s}
+            disabled={disabled}
+            onClick={() => onChange(s)}
+            style={{
+              borderRadius: 20,
+              borderWidth: '0.5px',
+              borderStyle: 'solid',
+              fontSize: 11,
+              padding: '3px 10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              transition: 'all 0.15s',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              opacity: disabled ? 0.5 : 1,
+              ...(isActive ? ACTIVE[s] : INACTIVE[s]),
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: DOT_COLOR[s],
+                flexShrink: 0,
+              }}
+            />
+            {LABELS[s]}
+          </button>
+        );
+      })}
     </div>
   );
 }

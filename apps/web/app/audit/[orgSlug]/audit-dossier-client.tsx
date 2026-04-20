@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ConformanceStatus, ReadinessStatus } from '@iso16363/shared-types';
+import { ConformanceStatus } from '@iso16363/shared-types';
 import { AuditPanel } from '../../../components/audit-panel/audit-panel';
 import { ConformanceBadge } from '../../../components/audit-panel/conformance-badge';
 import { downloadPdf } from '../../../lib/api-client';
@@ -49,9 +49,9 @@ interface Props {
 type FilterMode = 'all' | 'non_compliant' | 'awaiting';
 
 const READINESS_DOT: Record<string, string> = {
-  READY: 'bg-green-500',
-  IN_PROGRESS: 'bg-yellow-400',
-  PENDING: 'bg-gray-300',
+  READY: '#1D9E75',
+  IN_PROGRESS: '#378ADD',
+  PENDING: '#EF9F27',
 };
 
 function matchesFilter(metric: DossierMetric, filter: FilterMode): boolean {
@@ -62,41 +62,77 @@ function matchesFilter(metric: DossierMetric, filter: FilterMode): boolean {
   return true;
 }
 
-function MetricRow({
-  metric,
-  token,
-  isAuditor,
-}: {
-  metric: DossierMetric;
-  token: string;
-  isAuditor: boolean;
-}) {
+function MetricRow({ metric, token, isAuditor }: { metric: DossierMetric; token: string; isAuditor: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [opinion, setOpinion] = useState(metric.auditorOpinion);
   const [comment, setComment] = useState(metric.auditorComment);
+  const isNC = opinion === ConformanceStatus.NON_COMPLIANT;
 
   return (
-    <li className="border-b border-gray-50 last:border-0">
+    <li
+      style={{
+        borderBottom: '0.5px solid var(--color-border-tertiary)',
+        borderLeft: isNC ? '2px solid #F09595' : 'none',
+      }}
+      className="last:border-b-0"
+    >
       <button
         onClick={() => setExpanded((e) => !e)}
-        className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+        style={{
+          width: '100%',
+          textAlign: 'left',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          padding: '8px 12px',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+        }}
+        className="hover:bg-[#f5f6f8] transition-colors"
       >
         <span
-          className={`w-2 h-2 rounded-full shrink-0 ${READINESS_DOT[metric.readiness] ?? 'bg-gray-300'}`}
+          style={{
+            width: 5,
+            height: 5,
+            borderRadius: '50%',
+            background: READINESS_DOT[metric.readiness] ?? '#EF9F27',
+            flexShrink: 0,
+          }}
         />
-        <span className="font-mono text-xs text-gray-400 w-12 shrink-0">{metric.code}</span>
-        <span className="text-sm text-gray-800 flex-1 text-left">{metric.title}</span>
-        <div className="flex items-center gap-2 shrink-0">
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            color: 'var(--color-text-secondary)',
+            width: 44,
+            flexShrink: 0,
+          }}
+        >
+          {metric.code}
+        </span>
+        <span style={{ fontSize: 13, color: 'var(--color-text-primary)', flex: 1, textAlign: 'left' }}>
+          {metric.title}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {opinion ? (
             <ConformanceBadge status={opinion} />
           ) : (
-            <span className="text-xs text-gray-300 italic">awaiting</span>
+            <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+              aguardando
+            </span>
           )}
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            width="12"
+            height="12"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            style={{
+              color: 'var(--color-text-secondary)',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -104,28 +140,69 @@ function MetricRow({
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-4 bg-gray-50/50">
+        <div
+          style={{
+            padding: '0 12px 12px',
+            background: 'var(--color-background-secondary)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+          }}
+        >
           {metric.normText && (
-            <p className="text-sm text-gray-700 border-l-4 border-blue-200 pl-3 leading-relaxed">
+            <p
+              style={{
+                fontSize: 13,
+                color: 'var(--color-text-primary)',
+                borderLeft: '2px solid #B5D4F4',
+                paddingLeft: 12,
+                lineHeight: 1.6,
+                margin: 0,
+              }}
+            >
               {metric.normText}
             </p>
           )}
+
           {metric.justification && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                Justification
+              <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+                Justificativa
               </p>
-              <p className="text-sm text-gray-700">{metric.justification}</p>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: 'var(--color-text-primary)',
+                  background: 'var(--color-background-primary)',
+                  border: '0.5px solid var(--color-border-tertiary)',
+                  borderRadius: 'var(--border-radius-md)',
+                  padding: '8px 10px',
+                  margin: 0,
+                }}
+              >
+                {metric.justification}
+              </p>
             </div>
           )}
+
           {metric.evidences.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                Evidence ({metric.evidences.length})
+              <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+                Evidências ({metric.evidences.length})
               </p>
-              <ul className="space-y-1">
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {metric.evidences.map((ev) => (
-                  <li key={ev.id} className="text-sm text-blue-600">
+                  <li
+                    key={ev.id}
+                    style={{
+                      fontSize: 12,
+                      color: '#185FA5',
+                      background: 'var(--color-background-primary)',
+                      border: '0.5px solid var(--color-border-tertiary)',
+                      borderRadius: 'var(--border-radius-md)',
+                      padding: '4px 8px',
+                    }}
+                  >
                     {ev.fileName}
                   </li>
                 ))}
@@ -170,65 +247,103 @@ export function AuditDossierClient({ sections, orgName, orgSlug, token, isAudito
   ).length;
   const awaiting = allMetrics.filter((m) => m.auditorOpinion === null).length;
 
+  const FILTERS: { mode: FilterMode; label: string }[] = [
+    { mode: 'all', label: 'Todas as métricas' },
+    { mode: 'non_compliant', label: 'Não conformes / Parciais' },
+    { mode: 'awaiting', label: 'Aguardando revisão' },
+  ];
+
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">{orgName}</h1>
-        <p className="text-sm text-gray-500 mt-1">ISO 16363 Audit Dossier</p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>
+            Dossiê de auditoria
+          </p>
+          <h1 style={{ fontSize: 16, fontWeight: 500, color: 'var(--color-text-primary)', margin: 0 }}>
+            {orgName}
+          </h1>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => handleExport('draft')}
+            disabled={exporting}
+            style={{
+              padding: '5px 12px',
+              fontSize: 11,
+              fontWeight: 500,
+              background: 'var(--color-background-primary)',
+              border: '0.5px solid var(--color-border-secondary)',
+              borderRadius: 'var(--border-radius-md)',
+              cursor: exporting ? 'not-allowed' : 'pointer',
+              opacity: exporting ? 0.5 : 1,
+              color: 'var(--color-text-secondary)',
+            }}
+          >
+            {exporting ? 'Gerando…' : 'Exportar rascunho'}
+          </button>
+          <button
+            onClick={() => handleExport('official')}
+            disabled={exporting}
+            style={{
+              padding: '5px 12px',
+              fontSize: 11,
+              fontWeight: 500,
+              background: '#185FA5',
+              color: '#E6F1FB',
+              border: 'none',
+              borderRadius: 'var(--border-radius-md)',
+              cursor: exporting ? 'not-allowed' : 'pointer',
+              opacity: exporting ? 0.5 : 1,
+            }}
+          >
+            {exporting ? 'Gerando…' : 'Exportar oficial'}
+          </button>
+        </div>
       </div>
 
-      {/* Export actions */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => handleExport('draft')}
-          disabled={exporting}
-          className="px-4 py-2 text-xs font-medium bg-white border border-gray-200 rounded-md hover:border-gray-400 disabled:opacity-50 transition-colors"
-        >
-          {exporting ? 'Generating…' : 'Export Draft PDF'}
-        </button>
-        <button
-          onClick={() => handleExport('official')}
-          disabled={exporting}
-          className="px-4 py-2 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-        >
-          {exporting ? 'Generating…' : 'Export Official PDF'}
-        </button>
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+        {[
+          { label: `de ${allMetrics.length} revisadas`, value: reviewed, color: 'var(--color-text-primary)', bg: 'var(--color-background-primary)' },
+          { label: 'não conformes / parciais', value: nonCompliant, color: '#791F1F', bg: '#FCEBEB' },
+          { label: 'aguardando revisão', value: awaiting, color: 'var(--color-text-secondary)', bg: 'var(--color-background-primary)' },
+        ].map(({ label, value, color, bg }) => (
+          <div
+            key={label}
+            style={{
+              background: bg,
+              border: '0.5px solid var(--color-border-tertiary)',
+              borderRadius: 'var(--border-radius-lg)',
+              padding: '10px 12px',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ fontSize: 22, fontWeight: 500, color, margin: 0, lineHeight: 1 }}>{value}</p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 3 }}>{label}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-gray-900">{reviewed}</p>
-          <p className="text-xs text-gray-500 mt-0.5">of {allMetrics.length} reviewed</p>
-        </div>
-        <div className="bg-white border border-red-200 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-red-600">{nonCompliant}</p>
-          <p className="text-xs text-gray-500 mt-0.5">non-compliant / partial</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-gray-400">{awaiting}</p>
-          <p className="text-xs text-gray-500 mt-0.5">awaiting review</p>
-        </div>
-      </div>
-
-      {/* Filter */}
-      <div className="flex gap-2">
-        {(
-          [
-            { mode: 'all' as const, label: 'All metrics' },
-            { mode: 'non_compliant' as const, label: 'Non-compliant / Partial' },
-            { mode: 'awaiting' as const, label: 'Awaiting review' },
-          ] as const
-        ).map(({ mode, label }) => (
+      {/* Filter pills */}
+      <div style={{ display: 'flex', gap: 6 }}>
+        {FILTERS.map(({ mode, label }) => (
           <button
             key={mode}
             onClick={() => setFilter(mode)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              filter === mode
-                ? 'bg-gray-900 text-white border-gray-900'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-            }`}
+            style={{
+              padding: '3px 10px',
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: filter === mode ? 500 : 400,
+              border: '0.5px solid',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              background: filter === mode ? '#E6F1FB' : 'var(--color-background-primary)',
+              borderColor: filter === mode ? '#B5D4F4' : 'var(--color-border-secondary)',
+              color: filter === mode ? '#0C447C' : 'var(--color-text-secondary)',
+            }}
           >
             {label}
           </button>
@@ -237,15 +352,35 @@ export function AuditDossierClient({ sections, orgName, orgSlug, token, isAudito
 
       {/* Sections */}
       {sections.map((section) => {
-        const sectionMetrics = section.subsections.flatMap((sub) => sub.metrics);
-        const visibleCount = sectionMetrics.filter((m) => matchesFilter(m, filter)).length;
+        const visibleCount = section.subsections
+          .flatMap((sub) => sub.metrics)
+          .filter((m) => matchesFilter(m, filter)).length;
         if (visibleCount === 0) return null;
 
         return (
-          <div key={section.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <span className="font-mono text-xs text-gray-400 mr-2">{section.code}</span>
-              <span className="text-sm font-semibold text-gray-900">{section.title}</span>
+          <div
+            key={section.id}
+            style={{
+              background: 'var(--color-background-primary)',
+              border: '0.5px solid var(--color-border-tertiary)',
+              borderRadius: 'var(--border-radius-lg)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Section header */}
+            <div
+              style={{
+                padding: '8px 12px',
+                background: 'var(--color-background-secondary)',
+                borderBottom: '0.5px solid var(--color-border-tertiary)',
+              }}
+            >
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-secondary)', marginRight: 8 }}>
+                {section.code}
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>
+                {section.title}
+              </span>
             </div>
 
             {section.subsections.map((sub) => {
@@ -254,11 +389,21 @@ export function AuditDossierClient({ sections, orgName, orgSlug, token, isAudito
 
               return (
                 <div key={sub.id}>
-                  <div className="px-4 py-2 border-b border-gray-100 bg-gray-50/50">
-                    <span className="font-mono text-xs text-gray-400 mr-2">{sub.code}</span>
-                    <span className="text-xs font-medium text-gray-600">{sub.title}</span>
+                  <div
+                    style={{
+                      padding: '6px 12px',
+                      borderBottom: '0.5px solid var(--color-border-tertiary)',
+                      background: 'rgba(245,246,248,0.5)',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-secondary)', marginRight: 6 }}>
+                      {sub.code}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>
+                      {sub.title}
+                    </span>
                   </div>
-                  <ul>
+                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                     {visibleMetrics.map((metric) => (
                       <MetricRow key={metric.metricId} metric={metric} token={token} isAuditor={isAuditor} />
                     ))}

@@ -12,9 +12,9 @@ interface SectionData {
 }
 
 const SECTION_TITLES: Record<string, string> = {
-  '3': 'Organizational Infrastructure',
-  '4': 'Digital Object Management',
-  '5': 'Infrastructure & Security Risk Management',
+  '3': 'Infraestrutura organizacional',
+  '4': 'Gestão de objetos digitais',
+  '5': 'Gestão de infraestrutura e riscos',
 };
 
 export default async function DashboardPage() {
@@ -37,41 +37,80 @@ export default async function DashboardPage() {
   const totalReady = Object.values(summary).reduce((acc, s) => acc + s.READY, 0);
   const totalInProg = Object.values(summary).reduce((acc, s) => acc + s.IN_PROGRESS, 0);
   const overallPct = Math.round((totalReady / totalMetrics) * 100);
+  const orgName = session?.user?.email?.split('@')[1] ?? 'Organização';
 
   return (
-    <div className="max-w-3xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {totalReady} of {totalMetrics} metrics ready · {totalInProg} in progress
+    <div style={{ maxWidth: 720, padding: '24px' }}>
+      {/* Page header */}
+      <div style={{ marginBottom: 20 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+          Dashboard
         </p>
+        <h1 style={{ fontSize: 16, fontWeight: 500, color: 'var(--color-text-primary)', margin: 0 }}>
+          Prontidão de conformidade ISO 16363
+        </h1>
       </div>
 
-      {/* Overall progress */}
-      <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-700">Overall Compliance Readiness</h2>
-          <span className="text-2xl font-bold text-gray-900">{overallPct}%</span>
+      {/* Overall progress card */}
+      <div
+        style={{
+          background: 'var(--color-background-primary)',
+          border: '0.5px solid var(--color-border-tertiary)',
+          borderRadius: 'var(--border-radius-lg)',
+          padding: '14px 16px',
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', margin: 0 }}>
+              {orgName}
+            </p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+              {totalReady} de {totalMetrics} métricas prontas · {totalInProg} em andamento
+            </p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: 24, fontWeight: 500, color: '#0F6E56', lineHeight: 1, margin: 0 }}>
+              {overallPct}%
+            </p>
+          </div>
         </div>
-        <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden flex">
-          <div
-            className="bg-green-500 h-full transition-all"
-            style={{ width: `${Math.round((totalReady / totalMetrics) * 100)}%` }}
-          />
-          <div
-            className="bg-yellow-400 h-full transition-all"
-            style={{ width: `${Math.round((totalInProg / totalMetrics) * 100)}%` }}
-          />
+
+        {/* Overall progress bar — 4px */}
+        <div
+          style={{
+            width: '100%',
+            height: 4,
+            background: 'var(--color-border-tertiary)',
+            borderRadius: 2,
+            overflow: 'hidden',
+            display: 'flex',
+          }}
+        >
+          <div style={{ width: `${Math.round((totalReady / totalMetrics) * 100)}%`, background: '#1D9E75', height: '100%', transition: 'width 0.3s' }} />
+          <div style={{ width: `${Math.round((totalInProg / totalMetrics) * 100)}%`, background: '#EF9F27', height: '100%', transition: 'width 0.3s' }} />
         </div>
-        <div className="flex gap-4 mt-2 text-xs text-gray-500">
-          <span><span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1" />{totalReady} ready</span>
-          <span><span className="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-1" />{totalInProg} in progress</span>
-          <span><span className="inline-block w-2 h-2 rounded-full bg-gray-200 mr-1" />{totalMetrics - totalReady - totalInProg} not started</span>
+
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: 'var(--color-text-secondary)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1D9E75', display: 'inline-block' }} />
+            {totalReady} prontas
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />
+            {totalInProg} em andamento
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#d1d5db', display: 'inline-block' }} />
+            {totalMetrics - totalReady - totalInProg} não iniciadas
+          </span>
         </div>
       </div>
 
       {/* Per-section progress */}
-      <div className="grid gap-4 mb-8">
+      <div style={{ display: 'grid', gap: 10, marginBottom: 24 }}>
         {Object.entries(summary).map(([id, data]) => (
           <SectionProgress key={id} sectionId={id} title={SECTION_TITLES[id]} data={data} />
         ))}
@@ -79,9 +118,20 @@ export default async function DashboardPage() {
 
       <Link
         href="/standard"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '7px 14px',
+          background: '#185FA5',
+          color: '#E6F1FB',
+          fontSize: 13,
+          fontWeight: 500,
+          borderRadius: 'var(--border-radius-md)',
+          textDecoration: 'none',
+        }}
       >
-        Browse ISO 16363 Standard →
+        Navegar no padrão ISO 16363 ↗
       </Link>
     </div>
   );

@@ -5,6 +5,19 @@ import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  border: '0.5px solid rgba(0,0,0,0.13)',
+  borderRadius: 6,
+  padding: '8px 10px',
+  fontSize: 13,
+  color: '#1a1a1a',
+  outline: 'none',
+  boxSizing: 'border-box',
+  background: 'white',
+  fontFamily: 'inherit',
+};
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,7 +35,7 @@ function LoginForm() {
     try {
       const result = await signIn('credentials', { email, password, redirect: false });
       if (result?.error) {
-        setError('Invalid email or password');
+        setError('E-mail ou senha inválidos');
       } else {
         router.push(callbackUrl);
         router.refresh();
@@ -33,16 +46,33 @@ function LoginForm() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Sign in</h1>
-        <p className="mt-1 text-sm text-gray-500">ISO 16363 Compliance Platform</p>
-      </div>
+    <div style={{ maxWidth: 360 }}>
+      {/* Eyebrow */}
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          color: '#9a9a9a',
+          margin: '0 0 6px',
+        }}
+      >
+        Acesso à plataforma
+      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Title */}
+      <h1 style={{ fontSize: 22, fontWeight: 500, color: '#1a1a1a', margin: '0 0 4px' }}>Entrar</h1>
+
+      {/* Subtitle */}
+      <p style={{ fontSize: 13, color: '#5a5a5a', margin: '0 0 24px' }}>
+        ISO 16363 Compliance Platform
+      </p>
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+          <label htmlFor="email" style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#5a5a5a', marginBottom: 5 }}>
+            E-mail
           </label>
           <input
             id="email"
@@ -51,14 +81,27 @@ function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            style={inputStyle}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#185FA5';
+              e.currentTarget.style.boxShadow = '0 0 0 2px #E6F1FB';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.13)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+            <label htmlFor="password" style={{ fontSize: 12, fontWeight: 500, color: '#5a5a5a' }}>
+              Senha
+            </label>
+            <span style={{ fontSize: 11, color: '#185FA5', cursor: 'pointer' }}>
+              Esqueceu a senha?
+            </span>
+          </div>
           <input
             id="password"
             type="password"
@@ -66,12 +109,30 @@ function LoginForm() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            style={inputStyle}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#185FA5';
+              e.currentTarget.style.boxShadow = '0 0 0 2px #E6F1FB';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.13)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          <p
+            style={{
+              background: '#FCEBEB',
+              color: '#791F1F',
+              border: '0.5px solid #F09595',
+              borderRadius: 6,
+              padding: '8px 10px',
+              fontSize: 12,
+              margin: 0,
+            }}
+          >
             {error}
           </p>
         )}
@@ -79,16 +140,27 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-md transition-colors"
+          style={{
+            width: '100%',
+            background: loading ? '#5a93c8' : '#185FA5',
+            color: '#E6F1FB',
+            border: 'none',
+            borderRadius: 6,
+            padding: 9,
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit',
+          }}
         >
-          {loading ? 'Signing in…' : 'Sign in'}
+          {loading ? 'Entrando…' : 'Entrar'}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-gray-500">
-        Don&apos;t have an account?{' '}
-        <Link href="/register" className="text-blue-600 hover:underline font-medium">
-          Register
+      <p style={{ marginTop: 16, fontSize: 12, color: '#9a9a9a' }}>
+        Não tem conta?{' '}
+        <Link href="/register" style={{ color: '#185FA5', textDecoration: 'none' }}>
+          Criar conta →
         </Link>
       </p>
     </div>

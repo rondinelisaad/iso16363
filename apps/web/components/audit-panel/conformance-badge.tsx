@@ -1,21 +1,29 @@
 import { ConformanceStatus } from '@iso16363/shared-types';
 
-const CONFIG: Record<ConformanceStatus, { label: string; classes: string }> = {
+const CONFIG: Record<ConformanceStatus, { label: string; bg: string; color: string; border: string }> = {
   [ConformanceStatus.COMPLIANT]: {
-    label: 'Compliant',
-    classes: 'bg-green-100 text-green-800 border border-green-200',
+    label: 'Conforme',
+    bg: '#EAF3DE',
+    color: '#27500A',
+    border: '#C0DD97',
   },
   [ConformanceStatus.NON_COMPLIANT]: {
-    label: 'Non-Compliant',
-    classes: 'bg-red-100 text-red-800 border border-red-200',
+    label: 'Não conforme',
+    bg: '#FCEBEB',
+    color: '#791F1F',
+    border: '#F09595',
   },
   [ConformanceStatus.PARTIAL]: {
-    label: 'Partial',
-    classes: 'bg-orange-100 text-orange-800 border border-orange-200',
+    label: 'Parcialmente conforme',
+    bg: '#FAEEDA',
+    color: '#633806',
+    border: '#FAC775',
   },
   [ConformanceStatus.OBSERVATION]: {
-    label: 'Observation',
-    classes: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+    label: 'Observação',
+    bg: '#E6F1FB',
+    color: '#0C447C',
+    border: '#B5D4F4',
   },
 };
 
@@ -24,9 +32,22 @@ interface Props {
 }
 
 export function ConformanceBadge({ status }: Props) {
-  const { label, classes } = CONFIG[status];
+  const { label, bg, color, border } = CONFIG[status];
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${classes}`}>
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        background: bg,
+        color,
+        border: `0.5px solid ${border}`,
+        borderRadius: 4,
+        fontSize: 11,
+        fontWeight: 500,
+        padding: '2px 7px',
+        whiteSpace: 'nowrap',
+      }}
+    >
       {label}
     </span>
   );

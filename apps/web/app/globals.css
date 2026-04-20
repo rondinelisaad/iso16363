@@ -24,6 +24,46 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+
+    /* Design system tokens */
+    --color-text-primary: #111827;
+    --color-text-secondary: #6b7280;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f6f8;
+    --color-border-primary: #d1d5db;
+    --color-border-secondary: #d1d5db;
+    --color-border-tertiary: #e5e7eb;
+    --color-border-info: #378add;
+    --border-radius-sm: 4px;
+    --border-radius-md: 6px;
+    --border-radius-lg: 8px;
+
+    /* Shell-level design tokens */
+    --font: var(--font-geist), system-ui, sans-serif;
+    --mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    --font-mono: var(--mono);
+    --text-1: #1a1a1a;
+    --text-2: #5a5a5a;
+    --text-3: #9a9a9a;
+    --shell-border: rgba(0, 0, 0, 0.08);
+    --shell-border-strong: rgba(0, 0, 0, 0.13);
+    --surface: #f8f8f7;
+    --surface-2: #f1f0ee;
+
+    /* Status colors */
+    --status-pending-bg: #faeeda;
+    --status-pending-text: #854f0b;
+    --status-pending-dot: #ef9f27;
+    --status-inprogress-bg: #e6f1fb;
+    --status-inprogress-text: #0c447c;
+    --status-inprogress-dot: #378add;
+    --status-ready-bg: #eaf3de;
+    --status-ready-text: #27500a;
+    --status-ready-dot: #1d9e75;
+    --status-nc-bg: #fcebeb;
+    --status-nc-text: #791f1f;
+    --status-nc-dot: #e24b4a;
+    --status-nc-border: #f09595;
   }
 
   .dark {
@@ -55,5 +95,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text-1);
+    font-weight: 400;
+  }
+}
+
+@layer utilities {
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-spin-slow {
+    animation: spin 0.9s linear infinite;
   }
 }
