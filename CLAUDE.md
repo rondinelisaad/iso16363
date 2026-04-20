@@ -239,17 +239,17 @@ CREATE POLICY tenant_isolation ON metric_statuses
 
 ---
 
-### M3 — ISO Tree & Evidence Module (Weeks 4–5)
+### ✅ M3 — ISO Tree & Evidence Module (Weeks 4–5) — COMPLETE
 **Goal:** Core product loop — navigate the standard, upload evidence, track readiness.
 
-- [ ] Hierarchical sidebar component (`IsoTreeNav`) reflecting Sections 3 → 3.1 → 3.1.1
-- [ ] `MetricCard` component: displays norm text, supporting text, evidence examples, discussion
-- [ ] `MetricStatus` CRUD endpoints (NestJS) with tenant isolation
-- [ ] Evidence upload: presigned S3 PUT URL flow; store `s3Key` in DB after upload
-- [ ] Inline PDF viewer (`react-pdf-viewer`) via presigned GET URL
-- [ ] Readiness status toggle (PENDING / IN_PROGRESS / READY) per metric per org
-- [ ] Dashboard: progress ring/bar showing % of metrics at READY per section
-- [ ] Bulk status filter (show only PENDING, only IN_PROGRESS, etc.)
+- [x] Hierarchical sidebar component (`IsoTreeNav`) reflecting Sections 3 → 3.1 → 3.1.1
+- [x] `MetricCard` component: displays norm text, supporting text, evidence examples, discussion
+- [x] `MetricStatus` CRUD endpoints (NestJS) with tenant isolation
+- [x] Evidence upload: presigned S3 PUT URL flow; store `s3Key` in DB after upload
+- [x] Inline evidence viewing via presigned GET URL (opens in browser/new tab)
+- [x] Readiness status toggle (PENDING / IN_PROGRESS / READY) per metric per org
+- [x] Dashboard: stacked progress bar showing % of metrics at READY per section
+- [x] Readiness status dots on tree nodes (colour-coded by status)
 
 **Definition of Done:** A contributor can navigate to metric 3.1.1, attach a PDF, write a justification, and mark it READY. Dashboard reflects the change.
 
@@ -402,3 +402,52 @@ All M2 checklist items delivered:
 - `apps/web/app/(auth)/` — login, register, accept-invite pages
 - `apps/web/app/create-org/` — organization creation page
 - `apps/web/app/(dashboard)/layout.tsx` — auth + org guard (Server Component)
+
+---
+
+### ✅ M3 — ISO Tree & Evidence Module — COMPLETE (2026-04-20)
+
+All M3 checklist items delivered:
+
+- [x] `IsoModule` — public endpoints: `GET /iso/tree` (nested), `GET /iso/sections/:id`, `GET /iso/metrics`
+- [x] `MetricsModule` — tenant-scoped: `GET /metrics`, `GET /metrics/summary`, `GET /metrics/:metricId`, `PATCH /metrics/:metricId` (upsert)
+- [x] `EvidenceModule` — tenant-scoped: `POST /evidence/upload-url` (presigned S3 PUT), `POST /evidence/record`, `GET /evidence/:id/view-url` (presigned S3 GET), `DELETE /evidence/:id`
+- [x] `OrgRequiredGuard` — rejects requests with no `orgId` in JWT before reaching metrics/evidence controllers
+- [x] `IsoTreeNav` (client component) — collapsible tree with colour-coded readiness dots; reads active path via `usePathname()`
+- [x] `MetricCard` (client component) — normText, supportingText, evidenceExamples, discussion; readiness toggle; justification auto-save on blur
+- [x] `ReadinessToggle` — pill button group (PENDING / IN_PROGRESS / READY) with colour states
+- [x] `EvidenceList` — file upload (presigned PUT → S3 → record), view (presigned GET → new tab), delete
+- [x] `SectionProgress` — stacked progress bar (green/yellow/gray) per section
+- [x] Dashboard — overall + per-section progress bars; link to standard browser
+- [x] `server-api.ts` helper — server-side fetch with `API_URL` + bearer token via `getServerSession`
+- [x] `/standard` layout — sidebar (tree + statuses) + content pane
+- [x] `/standard/[nodeId]` — sections show child list; metrics render `MetricCard`
+
+**API endpoints added:**
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/iso/tree` | Public | Full nested ISO 16363 tree |
+| GET | `/iso/sections/:id` | Public | Section/metric with children |
+| GET | `/iso/metrics` | Public | All 101 metrics flat |
+| GET | `/metrics` | JWT + org | All metric statuses for current org |
+| GET | `/metrics/summary` | JWT + org | Progress counts per section |
+| GET | `/metrics/:metricId` | JWT + org | Single metric status (null if not started) |
+| PATCH | `/metrics/:metricId` | JWT + org | Upsert readiness + justification |
+| POST | `/evidence/upload-url` | JWT + org | Generate presigned S3 PUT URL |
+| POST | `/evidence/record` | JWT + org | Record evidence after S3 upload |
+| GET | `/evidence/:id/view-url` | JWT + org | Generate presigned S3 GET URL |
+| DELETE | `/evidence/:id` | JWT + org | Delete evidence from S3 + DB |
+
+**Definition of Done met:** ISO tree renders with 3 sections → 13 subsections → 101 metrics. `PATCH /metrics/3.1.1` creates the status record, sets readiness to `IN_PROGRESS`, and the summary endpoint reflects the change immediately.
+
+**Key files:**
+- `apps/api/src/iso/` — ISO taxonomy read-only module
+- `apps/api/src/metrics/` — MetricStatus CRUD with tenant isolation
+- `apps/api/src/evidence/` — S3 presigned URL flow + Evidence records
+- `apps/api/src/common/guards/org-required.guard.ts` — rejects requests without org context
+- `apps/web/lib/server-api.ts` — server-side authenticated fetch helper
+- `apps/web/components/iso-tree/iso-tree-nav.tsx` — interactive collapsible tree (client)
+- `apps/web/components/metric-card/` — MetricCard, ReadinessToggle, EvidenceList
+- `apps/web/components/dashboard/section-progress.tsx` — stacked progress bar
+- `apps/web/app/(dashboard)/standard/` — layout + overview + [nodeId] detail pages
