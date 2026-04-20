@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# Prisma generated client (regenerated via prisma generate)
+**/prisma/generated/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Turbo cache
+.turbo/
+.cache/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.*.local
+.env.production
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Test coverage
+coverage/

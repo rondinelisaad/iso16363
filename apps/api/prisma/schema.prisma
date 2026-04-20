@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum ReadinessStatus {
+  PENDING
+  IN_PROGRESS
+  READY
+}
+
+enum ConformanceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+  PARTIAL
+  OBSERVATION
+}
+
+enum UserOrganizationRole {
+  org_manager
+  contributor
+  internal_auditor
+  external_auditor
+}
+
+// ─── Core tenancy ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String             @id @default(cuid())
+  email         String             @unique
+  name          String?
+  passwordHash  String
+  createdAt     DateTime           @default(now())
+  organizations UserOrganization[]
+  evidences     Evidence[]
+
+  @@map("users")
+}
+
+model Organization {
+  id             String             @id @default(cuid())
+  name           String
+  slug           String             @unique
+  createdAt      DateTime           @default(now())
+  users          UserOrganization[]
+  evidences      Evidence[]
+  metricStatuses MetricStatus[]
+
+  @@map("organizations")
+}
+
+model UserOrganization {
+  id             String               @id @default(cuid())
+  userId         String
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           UserOrganizationRole
+  createdAt      DateTime             @default(now())
+
+  @@unique([userId, organizationId])
+  @@map("user_organizations")
+}
+
+// ─── ISO 16363 taxonomy — seeded, read-only at runtime ───────────────────────
+
+model IsoSection {
+  id               String      @id // e.g. "3", "3.1", "3.1.1"
+  code             String      @unique // display code
+  title            String
+  level            Int // 1 = section, 2 = subsection, 3 = metric
+  parentId         String?
+  parent           IsoSection? @relation("Hierarchy", fields: [parentId], references: [id])
+  children         IsoSection[] @relation("Hierarchy")
+  // Only metrics (level=3) have the fields below
+  normText         String?
+  supportingText   String?
+  evidenceExamples String?
+  discussion       String?
+  statuses         MetricStatus[]
+
+  @@map("iso_sections")
+}
+
+// ─── Per-org status of each metric ───────────────────────────────────────────
+
+model MetricStatus {
+  id             String            @id @default(cuid())
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  metricId       String
+  metric         IsoSection        @relation(fields: [metricId], references: [id])
+  readiness      ReadinessStatus   @default(PENDING)
+  justification  String?
+  auditorOpinion ConformanceStatus?
+  auditorComment String?
+  updatedAt      DateTime          @updatedAt
+  evidences      Evidence[]
+
+  @@unique([organizationId, metricId])
+  @@index([organizationId, metricId])
+  @@map("metric_statuses")
+}
+
+// ─── Evidence files ───────────────────────────────────────────────────────────
+
+model Evidence {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  metricStatusId String
+  metricStatus   MetricStatus @relation(fields: [metricStatusId], references: [id], onDelete: Cascade)
+  uploadedBy     String
+  uploader       User         @relation(fields: [uploadedBy], references: [id])
+  fileName       String
+  s3Key          String
+  uploadedAt     DateTime     @default(now())
+
+  @@index([organizationId])
+  @@map("evidences")
+}
