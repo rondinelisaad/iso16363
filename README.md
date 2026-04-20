@@ -68,9 +68,76 @@ Organizations open the platform and find the entire ISO 16363 requirements tree 
 
 ## Getting Started
 
+Choose the setup that suits you — Docker (recommended, no local tooling required) or local development.
+
+---
+
+## Docker (recommended)
+
 ### Prerequisites
 
-- Node.js ≥ 18
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) ≥ 24
+
+### 1. Clone
+
+```bash
+git clone https://github.com/rondinelisaad/iso16363.git
+cd iso16363
+```
+
+### 2. Configure secrets
+
+```bash
+cp .env.example .env
+# Edit .env — at minimum set JWT_SECRET, NEXTAUTH_SECRET, and AWS credentials
+```
+
+### 3. Start
+
+```bash
+docker compose up --build
+```
+
+That's it. On first run Docker will:
+1. Pull the PostgreSQL 15 image
+2. Build the API and web images
+3. Apply all database migrations automatically
+4. Seed the full ISO 16363 taxonomy (101 metrics)
+
+| Service | URL |
+|---|---|
+| Web | http://localhost:3000 |
+| API | http://localhost:3001 |
+| Health check | http://localhost:3001/health |
+| PostgreSQL | localhost:5432 |
+
+### Useful commands
+
+```bash
+# Run in detached mode
+docker compose up -d --build
+
+# View logs
+docker compose logs -f api
+docker compose logs -f web
+
+# Stop everything
+docker compose down
+
+# Destroy including the database volume
+docker compose down -v
+
+# Rebuild a single service after code changes
+docker compose up --build api
+```
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Node.js ≥ 20
 - pnpm ≥ 9 (`npm install -g pnpm`)
 - PostgreSQL 15
 
@@ -108,6 +175,7 @@ pnpm prisma:seed
 
 ```bash
 # From the repo root — starts both API and web in watch mode
+cd ../..
 pnpm dev
 ```
 
@@ -121,19 +189,23 @@ pnpm dev
 
 ## Environment Variables
 
-Copy `.env.example` to `apps/api/.env` and fill in the values.
+For **Docker**: copy `.env.example` to `.env` at the repo root — `docker-compose.yaml` reads it automatically.
+
+For **local development**: copy `.env.example` to `apps/api/.env`.
 
 ```env
-# apps/api
+# Database (Docker sets this automatically; local dev needs it explicitly)
 DATABASE_URL=postgresql://user:password@localhost:5432/iso16363
+
+# API
 JWT_SECRET=
-AWS_REGION=
-AWS_S3_BUCKET=
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=iso16363-evidence
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 SIGNED_URL_TTL_SECONDS=900
 
-# apps/web
+# Web
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=
 NEXT_PUBLIC_API_URL=http://localhost:3001

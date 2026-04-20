@@ -25,6 +25,38 @@ A **multi-tenant SaaS** for compliance management and external auditing against 
 | Auth | NextAuth.js (frontend) + JWT/Passport (NestJS) | Role-based via JWT claims |
 | Database | PostgreSQL | RLS policies, recursive CTEs for hierarchy |
 | Storage | AWS S3 (or GCS) | Pre-signed URLs, time-limited access |
+| Container | Docker + docker-compose | Single command startup; Postgres, API, web |
+
+---
+
+## Running the Stack
+
+### Docker (default)
+
+```bash
+cp .env.example .env   # fill JWT_SECRET, NEXTAUTH_SECRET, AWS creds
+docker compose up --build
+```
+
+`docker-compose.yaml` at the repo root orchestrates three services:
+
+| Service | Image / Dockerfile | Port |
+|---|---|---|
+| `postgres` | `postgres:15-alpine` | 5432 |
+| `api` | `apps/api/Dockerfile` | 3001 |
+| `web` | `apps/web/Dockerfile` | 3000 |
+
+The API container runs `apps/api/entrypoint.sh` on startup, which:
+1. `prisma migrate deploy` — applies any pending migrations
+2. `prisma db seed` — seeds ISO 16363 taxonomy (idempotent via upsert)
+3. `node dist/main.js` — starts the NestJS server
+
+`NEXT_PUBLIC_API_URL` is a **build-time** argument for the web image (Next.js bakes it in at `next build`). Override it via the `args` block in `docker-compose.yaml` or in your `.env` file.
+
+### Local (alternative)
+
+Requires Node.js ≥ 20, pnpm ≥ 9, and a local PostgreSQL 15 instance.
+See the README for the step-by-step local setup.
 
 ---
 

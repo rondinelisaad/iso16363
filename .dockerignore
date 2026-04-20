@@ -1,0 +1,32 @@
+# Dependencies — reinstalled inside the image
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/.next
+**/out
+**/.turbo
+
+# Environment files — never bake secrets into images
+.env
+.env.*
+!.env.example
+apps/api/.env
+
+# Git
+.git
+.gitignore
+
+# TypeScript build info
+*.tsbuildinfo
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+*.log
+
+# Test coverage
+coverage
