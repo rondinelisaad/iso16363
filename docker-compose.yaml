@@ -31,6 +31,7 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-dev}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-dev}
       SIGNED_URL_TTL_SECONDS: ${SIGNED_URL_TTL_SECONDS:-900}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       PORT: 3001
     depends_on:
       postgres:
@@ -48,6 +49,8 @@ services:
     environment:
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-in-production}
+      # Server-side API URL (container-to-container, not via host)
+      API_URL: http://api:3001
     depends_on:
       - api
 

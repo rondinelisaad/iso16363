@@ -13,6 +13,8 @@ COPY packages/shared-types/package.json ./packages/shared-types/package.json
 RUN pnpm install --frozen-lockfile
 # Copy source after deps to keep the install layer cached
 COPY . .
+# Build shared-types first so the API can import it
+RUN pnpm --filter @iso16363/shared-types build
 WORKDIR /app/apps/api
 RUN node_modules/.bin/prisma generate
 RUN node_modules/.bin/nest build
@@ -37,6 +39,9 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy compiled output and Prisma assets from builder
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+# Copy built shared-types so runtime require() can resolve it
+COPY --from=builder /app/packages/shared-types/dist ./packages/shared-types/dist
+COPY --from=builder /app/packages/shared-types/package.json ./packages/shared-types/package.json
 
 COPY apps/api/entrypoint.sh ./apps/api/entrypoint.sh
 RUN chmod +x ./apps/api/entrypoint.sh

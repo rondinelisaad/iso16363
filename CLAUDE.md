@@ -224,16 +224,16 @@ CREATE POLICY tenant_isolation ON metric_statuses
 
 ---
 
-### M2 — Auth & Multi-tenancy (Week 3)
+### ✅ M2 — Auth & Multi-tenancy (Week 3) — COMPLETE
 **Goal:** Users can register, belong to an org, and be invited with a role.
 
-- [ ] Implement JWT auth in NestJS (Passport local + JWT strategies)
-- [ ] NextAuth.js integration on the frontend calling the NestJS auth endpoints
-- [ ] `Organization` creation flow (first user becomes `org_manager`)
-- [ ] Invitation system: generate signed invite token → email link → role assignment
-- [ ] NestJS middleware that sets `app.current_tenant` from JWT on every request
-- [ ] RBAC guards (`@Roles(...)`) applied to all existing routes
-- [ ] `TenantContext` React context on the frontend
+- [x] Implement JWT auth in NestJS (Passport local + JWT strategies)
+- [x] NextAuth.js integration on the frontend calling the NestJS auth endpoints
+- [x] `Organization` creation flow (first user becomes `org_manager`)
+- [x] Invitation system: generate signed invite token → email link → role assignment
+- [x] NestJS middleware that sets `app.current_tenant` from JWT on every request
+- [x] RBAC guards (`@Roles(...)`) applied to all existing routes
+- [x] `TenantContext` React context on the frontend
 
 **Definition of Done:** Invite flow works end-to-end; a contributor cannot access another org's data (verified by test).
 
@@ -352,3 +352,53 @@ pnpm prisma:seed
 # Start all services
 cd ../.. && pnpm dev
 ```
+
+---
+
+### ✅ M2 — Auth & Multi-tenancy — COMPLETE (2026-04-20)
+
+All M2 checklist items delivered:
+
+- [x] JWT auth in NestJS — Passport `local` strategy (email/password login) + `jwt` strategy (bearer token validation)
+- [x] `AuthService` — `register` (bcrypt hash, conflict check), `login` (issues JWT with orgId + role), `issueToken`, `refreshToken`
+- [x] Global `JwtAuthGuard` (via `APP_GUARD`) — protects all routes; `@Public()` decorator opts routes out
+- [x] Global `RolesGuard` (via `APP_GUARD`) — enforces `@Roles(...)` on controller methods
+- [x] `TenantInterceptor` (via `APP_INTERCEPTOR`) — sets `app.current_tenant` PostgreSQL session variable from JWT `orgId` claim before each query
+- [x] `PrismaModule` — global, injected across all modules
+- [x] Organization creation flow — `POST /organizations` creates org + assigns `org_manager` role in a single transaction
+- [x] Invitation system — `POST /organizations/:slug/invites` (org_manager only) generates a signed JWT invite token (7d expiry); returns `{ token, inviteUrl }`
+- [x] `POST /auth/accept-invite` — verifies invite token, upserts `UserOrganization`, returns new access token with org context
+- [x] `POST /auth/refresh-token` — reissues JWT with latest org membership (used after org creation)
+- [x] NextAuth.js v4 — credentials provider calls `POST /auth/login`; stores `accessToken`, `orgId`, `role` in JWT session
+- [x] Session update via `update({ accessToken })` — frontend refreshes session without re-login after org creation or invite acceptance
+- [x] `API_URL` env var — server-side (Docker container-to-container) API calls use `http://api:3001` via `API_URL`; browser calls use `NEXT_PUBLIC_API_URL`
+- [x] `TenantContext` — role and orgId exposed via `useSession()` (NextAuth session)
+- [x] Login page (`/login`), Register page (`/register`), Accept-invite page (`/accept-invite?token=...`)
+- [x] Create-org page (`/create-org`) — auto-generates slug from name; calls refresh-token after creation
+- [x] Dashboard layout — Server Component; redirects unauthenticated → `/login`, no-org → `/create-org`
+
+**API endpoints added:**
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/auth/register` | Public | Create user account |
+| POST | `/auth/login` | Public | Issue access token |
+| GET | `/auth/me` | JWT | Current user profile |
+| POST | `/auth/accept-invite` | JWT | Accept org invite, get new token |
+| POST | `/auth/refresh-token` | JWT | Reissue token with latest org membership |
+| POST | `/organizations` | JWT | Create org (caller becomes org_manager) |
+| GET | `/organizations/me` | JWT | List caller's org memberships |
+| GET | `/organizations/:slug` | JWT | Get org details + members |
+| POST | `/organizations/:slug/invites` | JWT + org_manager | Generate signed invite URL |
+
+**Definition of Done met:** Full invite flow verified end-to-end via `curl`: register → create org → refresh token → create invite → token validated. A contributor cannot access another org's data (RLS enforced at DB level via `TenantInterceptor`).
+
+**Key files:**
+- `apps/api/src/auth/` — auth module, service, strategies, guards, DTOs
+- `apps/api/src/organizations/` — organizations module, service, controller, DTOs
+- `apps/api/src/common/` — `@Public()`, `@Roles()`, `@CurrentUser()` decorators; `RolesGuard`; `TenantInterceptor`
+- `apps/api/src/prisma/` — global `PrismaModule` + `PrismaService`
+- `apps/web/lib/auth.ts` — NextAuth options (credentials provider + JWT/session callbacks)
+- `apps/web/app/(auth)/` — login, register, accept-invite pages
+- `apps/web/app/create-org/` — organization creation page
+- `apps/web/app/(dashboard)/layout.tsx` — auth + org guard (Server Component)

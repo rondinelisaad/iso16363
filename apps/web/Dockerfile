@@ -13,6 +13,8 @@ COPY packages/shared-types/package.json ./packages/shared-types/package.json
 RUN pnpm install --frozen-lockfile
 # Copy source after deps to keep the install layer cached
 COPY . .
+# Build shared-types so the web app can import it
+RUN pnpm --filter @iso16363/shared-types build
 # NEXT_PUBLIC_* vars must be present at build time (Next.js bakes them in)
 ARG NEXT_PUBLIC_API_URL=http://localhost:3001
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
