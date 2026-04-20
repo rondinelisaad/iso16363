@@ -1,19 +1,27 @@
 import { Controller, Get, Patch, Body, Param, UseGuards } from '@nestjs/common';
 import { MetricsService } from './metrics.service';
 import { UpdateMetricStatusDto } from './dto/update-metric-status.dto';
+import { UpdateAuditStatusDto } from './dto/update-audit-status.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { OrgRequiredGuard } from '../common/guards/org-required.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { JwtPayload } from '../auth/jwt-payload.interface';
+import { UserOrganizationRole } from '@iso16363/shared-types';
 
 @Controller('metrics')
 @UseGuards(OrgRequiredGuard)
 export class MetricsController {
   constructor(private readonly metricsService: MetricsService) {}
 
-  // Must be declared before :metricId to avoid route shadowing
+  // Static routes must be declared before :metricId to avoid shadowing
   @Get('summary')
   summary(@CurrentUser() user: JwtPayload) {
     return this.metricsService.getSummary(user.orgId!);
+  }
+
+  @Get('gap-analysis')
+  gapAnalysis(@CurrentUser() user: JwtPayload) {
+    return this.metricsService.getGapAnalysis(user.orgId!);
   }
 
   @Get()
@@ -27,11 +35,22 @@ export class MetricsController {
   }
 
   @Patch(':metricId')
+  @Roles(UserOrganizationRole.org_manager, UserOrganizationRole.contributor)
   update(
     @CurrentUser() user: JwtPayload,
     @Param('metricId') metricId: string,
     @Body() dto: UpdateMetricStatusDto,
   ) {
-    return this.metricsService.update(user.orgId!, metricId, dto);
+    return this.metricsService.update(user.orgId!, metricId, user.sub, dto);
+  }
+
+  @Patch(':metricId/audit')
+  @Roles(UserOrganizationRole.external_auditor)
+  updateAudit(
+    @CurrentUser() user: JwtPayload,
+    @Param('metricId') metricId: string,
+    @Body() dto: UpdateAuditStatusDto,
+  ) {
+    return this.metricsService.updateAudit(user.orgId!, metricId, user.sub, dto);
   }
 }

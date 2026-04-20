@@ -268,7 +268,7 @@ Evidence files are never served via direct S3 URLs. Every file access goes throu
 | M1 — Foundation | ✅ Complete | Monorepo, schema, seed, scaffolding |
 | M2 — Auth & Multi-tenancy | ✅ Complete | JWT auth, org creation, invite flow, RBAC |
 | M3 — ISO Tree & Evidence | ✅ Complete | Navigate standard, upload evidence, track readiness |
-| M4 — Auditor Module | ⬜ Planned | Conformance opinions, gap analysis, notifications |
+| M4 — Auditor Module | ✅ Complete | Conformance opinions, gap analysis, notifications |
 | M5 — Reports & Hardening | ⬜ Planned | PDF export, E2E tests, beta onboarding |
 
 ---

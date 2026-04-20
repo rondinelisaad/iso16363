@@ -255,15 +255,15 @@ CREATE POLICY tenant_isolation ON metric_statuses
 
 ---
 
-### M4 — Auditor Module (Week 6)
+### ✅ M4 — Auditor Module (Week 6) — COMPLETE
 **Goal:** External auditor can review the full dossier and issue official opinions.
 
-- [ ] Read-only auditor view at `/audit/[orgSlug]` (no upload, no status change by contributor role)
-- [ ] Auditor opinion panel per metric: `ConformanceStatus` dropdown + comment textarea
-- [ ] Auditor filter: "Show only NON_COMPLIANT", "Show only awaiting review"
-- [ ] Audit trail: log every status change (who, when, old value → new value)
-- [ ] Notification system (email or in-app): notify `org_manager` when auditor adds a non-conformance
-- [ ] Gap Analysis summary view: table of all metrics with non-conformances + auditor comments
+- [x] Read-only auditor view at `/audit/[orgSlug]` (no upload, no readiness change by auditors)
+- [x] Auditor opinion panel per metric: `ConformanceStatus` dropdown + comment textarea
+- [x] Auditor filter: "Show only NON_COMPLIANT/Partial", "Show only awaiting review"
+- [x] Audit trail: log every status change (who, when, old value → new value) in `audit_logs`
+- [x] Notification system (in-app): notify `org_manager` when auditor adds a non-conformance; `NotificationBell` in header
+- [x] Gap Analysis summary view: table of all metrics with auditor opinions + comments
 
 **Definition of Done:** External auditor logs in, reviews a metric, marks it NON_COMPLIANT with a comment. Manager receives notification. Gap Analysis table is accurate.
 
@@ -451,3 +451,46 @@ All M3 checklist items delivered:
 - `apps/web/components/metric-card/` — MetricCard, ReadinessToggle, EvidenceList
 - `apps/web/components/dashboard/section-progress.tsx` — stacked progress bar
 - `apps/web/app/(dashboard)/standard/` — layout + overview + [nodeId] detail pages
+
+---
+
+### ✅ M4 — Auditor Module — COMPLETE (2026-04-20)
+
+All M4 checklist items delivered:
+
+- [x] `AuditModule` — `GET /audit/:orgSlug` (full dossier: org info + all 101 metrics with statuses, nested by section/subsection); `GET /audit/:orgSlug/gap-analysis`
+- [x] `NotificationsModule` — `GET /notifications` (unread), `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`
+- [x] `PATCH /metrics/:metricId/audit` — external_auditor only; sets `auditorOpinion` + `auditorComment`; creates `AuditLog` entry; creates `Notification` for all `org_manager` users on NON_COMPLIANT/PARTIAL/OBSERVATION
+- [x] `GET /metrics/gap-analysis` — all metrics with non-null `auditorOpinion`, with counts by opinion type
+- [x] Audit trail — `audit_logs` table; every change to `readiness` (in `MetricsService.update()`) and `auditorOpinion` (in `MetricsService.updateAudit()`) is logged with userId, oldValue, newValue
+- [x] RBAC hardening — `PATCH /metrics/:metricId` restricted to `org_manager` + `contributor`; `PATCH /metrics/:metricId/audit` restricted to `external_auditor`
+- [x] Migration `0003_audit_notifications` — creates `audit_logs` and `notifications` tables with RLS policies
+- [x] `AuditDossierClient` — interactive client component with section accordion, metric rows (expand for details + AuditPanel), and 3-mode filter (all / non-compliant / awaiting)
+- [x] `AuditPanel` — ConformanceStatus pill selector + comment textarea + save (external_auditor); read-only badge + comment (other roles)
+- [x] `ConformanceBadge` — color-coded badge (green/red/orange/yellow) for each ConformanceStatus value
+- [x] `NotificationBell` — client component in header; fetches unread count on mount; dropdown with dismiss + mark-all-read
+- [x] Dashboard layout updated — nav links (Dashboard, Standard, Gap Analysis), Auditor View shortcut, NotificationBell
+- [x] `/audit/[orgSlug]` — separate layout + page for the auditor dossier view
+- [x] `/gap-analysis` — summary cards + full table for org_manager and internal_auditor
+
+**API endpoints added:**
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/audit/:orgSlug` | JWT + org | Full dossier (slug or ID accepted) |
+| GET | `/audit/:orgSlug/gap-analysis` | JWT + org | Gap analysis for auditor view |
+| PATCH | `/metrics/:metricId/audit` | JWT + external_auditor | Set conformance opinion + comment |
+| GET | `/metrics/gap-analysis` | JWT + org | Gap analysis for dashboard users |
+| GET | `/notifications` | JWT + org | Unread notifications for current user |
+| PATCH | `/notifications/read-all` | JWT + org | Mark all notifications read |
+| PATCH | `/notifications/:id/read` | JWT + org | Mark single notification read |
+
+**Key files:**
+- `apps/api/prisma/migrations/0003_audit_notifications/` — new tables + RLS
+- `apps/api/src/audit/` — AuditModule, AuditService, AuditController
+- `apps/api/src/notifications/` — NotificationsModule, NotificationsService, NotificationsController
+- `apps/api/src/metrics/dto/update-audit-status.dto.ts` — ConformanceStatus DTO
+- `apps/web/components/audit-panel/` — AuditPanel, ConformanceBadge
+- `apps/web/components/notifications/notification-bell.tsx` — NotificationBell
+- `apps/web/app/audit/[orgSlug]/` — layout, page, AuditDossierClient
+- `apps/web/app/(dashboard)/gap-analysis/page.tsx` — Gap Analysis dashboard page

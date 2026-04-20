@@ -108,6 +108,38 @@ model MetricStatus {
   @@map("metric_statuses")
 }
 
+// ─── Audit trail ─────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  metricId       String
+  userId         String
+  field          String
+  oldValue       String?
+  newValue       String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, metricId])
+  @@map("audit_logs")
+}
+
+// ─── In-app notifications ─────────────────────────────────────────────────────
+
+model Notification {
+  id             String   @id @default(cuid())
+  organizationId String
+  recipientId    String
+  type           String
+  metricId       String
+  message        String
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([recipientId, read])
+  @@map("notifications")
+}
+
 // ─── Evidence files ───────────────────────────────────────────────────────────
 
 model Evidence {

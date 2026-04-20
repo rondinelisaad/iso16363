@@ -1,18 +1,16 @@
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '../../lib/auth';
-import { NotificationBell } from '../../components/notifications/notification-bell';
+import { authOptions } from '../../../lib/auth';
+import { NotificationBell } from '../../../components/notifications/notification-bell';
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function AuditLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
 
   if (!session) redirect('/login');
   if (!session.user.orgId) redirect('/create-org');
 
   const role = session.user.role ?? '';
-  const showGapAnalysis = ['internal_auditor', 'org_manager'].includes(role);
-  const showAuditView = ['external_auditor', 'internal_auditor', 'org_manager'].includes(role);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -21,23 +19,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Link href="/dashboard" className="text-sm font-semibold text-gray-900 hover:text-blue-600">
             ISO 16363 Platform
           </Link>
-          <nav className="flex items-center gap-4 text-sm text-gray-500">
-            <Link href="/dashboard" className="hover:text-gray-900 transition-colors">Dashboard</Link>
-            <Link href="/standard" className="hover:text-gray-900 transition-colors">Standard</Link>
-            {showGapAnalysis && (
-              <Link href="/gap-analysis" className="hover:text-gray-900 transition-colors">Gap Analysis</Link>
-            )}
-          </nav>
+          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-medium">
+            Audit Dossier
+          </span>
         </div>
         <div className="flex items-center gap-3">
-          {showAuditView && (
-            <Link
-              href={`/audit/${session.user.orgId}`}
-              className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors font-medium"
-            >
-              Auditor View
-            </Link>
-          )}
+          <Link href="/dashboard" className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+            ← Dashboard
+          </Link>
           <NotificationBell token={session.accessToken ?? ''} />
           <div className="flex items-center gap-2 text-sm text-gray-500 pl-2 border-l border-gray-200">
             <span className="max-w-[140px] truncate">{session.user.email}</span>
@@ -47,7 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         </div>
       </header>
-      <main className="p-6">{children}</main>
+      <main>{children}</main>
     </div>
   );
 }
