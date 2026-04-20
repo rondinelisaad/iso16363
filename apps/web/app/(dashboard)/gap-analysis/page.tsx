@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '../../../lib/auth';
 import { serverApi, getToken } from '../../../lib/server-api';
 import { ConformanceBadge } from '../../../components/audit-panel/conformance-badge';
+import { ExportPdfButton } from '../../../components/reports/export-pdf-button';
 import { ConformanceStatus, ReadinessStatus } from '@iso16363/shared-types';
 
 interface GapItem {
@@ -53,11 +54,17 @@ export default async function GapAnalysisPage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Gap Analysis</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Metrics with auditor opinions — {data.reviewed} of {data.total} reviewed ({pctReviewed}%)
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Gap Analysis</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Metrics with auditor opinions — {data.reviewed} of {data.total} reviewed ({pctReviewed}%)
+          </p>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <ExportPdfButton orgId={session!.user.orgId!} variant="draft" label="Export Draft PDF" />
+          <ExportPdfButton orgId={session!.user.orgId!} variant="official" label="Export Official PDF" />
+        </div>
       </div>
 
       {/* Summary cards */}

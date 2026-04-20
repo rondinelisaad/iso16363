@@ -105,6 +105,7 @@ model MetricStatus {
 
   @@unique([organizationId, metricId])
   @@index([organizationId, metricId])
+  @@index([organizationId, auditorOpinion])
   @@map("metric_statuses")
 }
 
@@ -137,6 +138,7 @@ model Notification {
   createdAt      DateTime @default(now())
 
   @@index([recipientId, read])
+  @@index([organizationId])
   @@map("notifications")
 }
 

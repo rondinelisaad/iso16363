@@ -26,3 +26,18 @@ export const api = {
     request<T>(path, { method: 'PATCH', body: JSON.stringify(body), token }),
   delete: <T>(path: string, token?: string) => request<T>(path, { method: 'DELETE', token }),
 };
+
+export async function downloadPdf(path: string, token: string, filename: string): Promise<void> {
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const res = await fetch(`${BASE}${path}`, { headers });
+  if (!res.ok) throw new Error(`PDF export failed: HTTP ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

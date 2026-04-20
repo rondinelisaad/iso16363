@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ConformanceStatus, ReadinessStatus } from '@iso16363/shared-types';
 import { AuditPanel } from '../../../components/audit-panel/audit-panel';
 import { ConformanceBadge } from '../../../components/audit-panel/conformance-badge';
+import { downloadPdf } from '../../../lib/api-client';
 
 interface Evidence {
   id: string;
@@ -149,8 +150,18 @@ function MetricRow({
   );
 }
 
-export function AuditDossierClient({ sections, orgName, token, isAuditor }: Props) {
+export function AuditDossierClient({ sections, orgName, orgSlug, token, isAuditor }: Props) {
   const [filter, setFilter] = useState<FilterMode>('all');
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport(variant: 'draft' | 'official') {
+    setExporting(true);
+    try {
+      await downloadPdf(`/reports/${orgSlug}/pdf?variant=${variant}`, token, `iso16363-${variant}-${orgSlug}.pdf`);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const allMetrics = sections.flatMap((s) => s.subsections.flatMap((sub) => sub.metrics));
   const reviewed = allMetrics.filter((m) => m.auditorOpinion !== null).length;
@@ -165,6 +176,24 @@ export function AuditDossierClient({ sections, orgName, token, isAuditor }: Prop
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">{orgName}</h1>
         <p className="text-sm text-gray-500 mt-1">ISO 16363 Audit Dossier</p>
+      </div>
+
+      {/* Export actions */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleExport('draft')}
+          disabled={exporting}
+          className="px-4 py-2 text-xs font-medium bg-white border border-gray-200 rounded-md hover:border-gray-400 disabled:opacity-50 transition-colors"
+        >
+          {exporting ? 'Generating…' : 'Export Draft PDF'}
+        </button>
+        <button
+          onClick={() => handleExport('official')}
+          disabled={exporting}
+          className="px-4 py-2 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        >
+          {exporting ? 'Generating…' : 'Export Official PDF'}
+        </button>
       </div>
 
       {/* Summary */}
